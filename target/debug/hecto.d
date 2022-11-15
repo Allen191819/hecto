@@ -1,0 +1,1 @@
+/home/allen/Workplace/rust/hecto/target/debug/hecto: /home/allen/Workplace/rust/hecto/src/document.rs /home/allen/Workplace/rust/hecto/src/editor.rs /home/allen/Workplace/rust/hecto/src/main.rs /home/allen/Workplace/rust/hecto/src/row.rs /home/allen/Workplace/rust/hecto/src/terminal.rs
