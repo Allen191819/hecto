@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 termion = "1"           # in order to enable raw mode
+unicode-segmentation = "1"
