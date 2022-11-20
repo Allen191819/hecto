@@ -1,3 +1,4 @@
+use crate::FileType;
 use crate::Position;
 use crate::Row;
 use crate::SearchDirection;
@@ -9,18 +10,22 @@ pub struct Document {
     rows: Vec<Row>,
     pub file_name: Option<String>,
     dirty: bool,
+    file_type: FileType,
 }
 impl Document {
     pub fn open(filename: &str) -> Result<Self, std::io::Error> {
         let contents = fs::read_to_string(filename)?;
         let mut rows = Vec::new();
         for value in contents.lines() {
-            rows.push(Row::from(value));
+            let mut row = Row::from(value);
+            row.highlight(None);
+            rows.push(row);
         }
         Ok(Self {
             rows,
             file_name: Some(filename.to_string()),
             dirty: false,
+            file_type: FileType::from(filename),
         })
     }
     pub fn row(&self, index: usize) -> Option<&Row> {
@@ -44,11 +49,13 @@ impl Document {
         if at.y == self.rows.len() {
             let mut row = Row::default();
             row.insert(0, c);
+            row.highlight(None);
             self.rows.push(row);
         } else {
             #[allow(clippy::indexing_slicing)]
             let row = &mut self.rows[at.y];
             row.insert(at.x, c);
+            row.highlight(None);
         }
     }
     #[allow(clippy::integer_arithmetic, clippy::indexing_slicing)]
@@ -62,9 +69,11 @@ impl Document {
             let next_row = self.rows.remove(at.y + 1);
             let row = &mut self.rows[at.y];
             row.append(&next_row);
+            row.highlight(None);
         } else {
             let row = &mut self.rows[at.y];
             row.delete(at.x);
+            row.highlight(None);
         }
     }
     fn insert_newline(&mut self, at: &Position) {
@@ -72,7 +81,10 @@ impl Document {
             self.rows.push(Row::default());
             return;
         }
-        let new_row = self.rows.get_mut(at.y).unwrap().split(at.x);
+        let current_row = &mut self.rows[at.y];
+        let mut new_row = current_row.split(at.x);
+        current_row.highlight(None);
+        new_row.highlight(None);
         #[allow(clippy::integer_arithmetic)]
         self.rows.insert(at.y + 1, new_row);
     }
@@ -83,6 +95,7 @@ impl Document {
                 file.write_all(row.as_bytes())?;
                 file.write_all(b"\n")?;
             }
+            self.file_type = FileType::from(file_name);
             self.dirty = false;
         }
         Ok(())
@@ -124,5 +137,13 @@ impl Document {
             }
         }
         None
+    }
+    pub fn highlight(&mut self, word: Option<&str>) {
+        for row in &mut self.rows {
+            row.highlight(word);
+        }
+    }
+    pub fn file_type(&self) -> String {
+        self.file_type.name()
     }
 }

@@ -276,12 +276,12 @@ impl Editor {
             file_name = name.clone();
             file_name.truncate(20);
         }
-        status = format!("{} - {} lines", file_name, self.document.len());
+        status = format!("{}{} - {} lines", file_name,modified_indicator, self.document.len());
         let line_indicator = format!(
-            "{}-{} lines{}",
+            "{} | {}/{}",
+            self.document.file_type(),
             self.cursor_position.y.saturating_add(1),
             self.document.len(),
-            modified_indicator
         );
         #[allow(clippy::integer_arithmetic)]
         let len = status.len() + line_indicator.len();
@@ -377,6 +377,7 @@ impl Editor {
                     } else if moved {
                         editor.move_cursor(Key::Left);
                     }
+                    editor.document.highlight(Some(query));
                 },
             )
             .unwrap_or(None);
@@ -384,6 +385,7 @@ impl Editor {
             self.cursor_position = old_position;
             self.scroll();
         }
+        self.document.highlight(None);
     }
 }
 
