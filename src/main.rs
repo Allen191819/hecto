@@ -19,6 +19,7 @@ pub use editor::SearchDirection;
 pub use filetype::FileType;
 pub use row::Row;
 pub use terminal::Terminal;
+pub use filetype::HighlightingOptions;
 
 fn main() {
     let mut editor = Editor::default();
